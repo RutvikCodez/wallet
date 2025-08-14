@@ -1,9 +1,14 @@
 import { config } from "dotenv";
-import express from "express";
+import express, { json } from "express";
 import { sql } from "./config/db.js";
 
 config();
 const app = express();
+app.use(json());
+// app.use((req, res, next) => {
+//   console.log("Middleware");
+//   next()
+// });
 const PORT = process.env.PORT;
 
 async function initDB() {
@@ -24,7 +29,23 @@ async function initDB() {
 }
 
 app.get("/", (req, res) => {
-  res.send("Working!");
+  res.send("It's working");
+});
+
+app.post("/api/transactions", async (req, res) => {
+  try {
+    const { user_id, title, amount, category } = req.body;
+    if (!user_id || !title || amount === undefined || !category) {
+      return res.status(400).json({ message: "All field are required" });
+    }
+    const transactions = await sql`INSERT INTO transactions(
+      user_id, title, amount, category
+    ) VALUES (${user_id}, ${title}, ${amount}, ${category}) RETURNING *`;
+    res.status(201).json(transactions[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server rrror" });
+  }
 });
 
 initDB().then(() => {
