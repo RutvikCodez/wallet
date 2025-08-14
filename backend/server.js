@@ -1,10 +1,12 @@
 import { config } from "dotenv";
 import express, { json } from "express";
 import { sql } from "./config/db.js";
+import rateLimiter from "./middleware/rateLimiter.js";
 
 config();
 const app = express();
 app.use(json());
+app.use(rateLimiter)
 // app.use((req, res, next) => {
 //   console.log("Middleware");
 //   next()
@@ -55,8 +57,7 @@ app.post("/api/transactions", async (req, res) => {
     ) VALUES (${user_id}, ${title}, ${amount}, ${category}) RETURNING *`;
     res.status(201).json(transactions[0]);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server rrror" });
+   c
   }
 });
 
